@@ -14,6 +14,9 @@ RUN go mod download
 # Copy only necessary files for go mod to download dependencies
 COPY go.mod go.sum ./
 
+# Copy the entire directory containing the main.go file
+COPY cmd/ ./cmd/
+
 # Build go app named main
 RUN go build -o main ./cmd/
 
@@ -32,5 +35,5 @@ COPY --from=builder /go/src/app/main .
 # Expose port 8080 for the container
 EXPOSE 8080
 
-# Run the binary
+# Starts the binary when the container starts
 CMD ["./main"]
