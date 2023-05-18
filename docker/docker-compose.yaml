@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  broker-service:
+    build:
+      # Update context path based on folder structure
+      context: ./../broker-service
+      # Update dockerfile path based on project folder structure
+      dockerfile: ../broker-service/cmd/broker-service.dockerfile
+    restart: always
+    ports:
+      - "7000:7000"
+    deploy:
+      mode: replicated
+      replicas: 1
