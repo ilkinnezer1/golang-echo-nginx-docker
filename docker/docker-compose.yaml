@@ -2,6 +2,7 @@ version: '3'
 
 services:
   broker-service:
+    container_name: broker_service
     build:
       # Update context path based on folder structure
       context: ./../broker-service
@@ -13,8 +14,11 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+    networks:
+      - microservice
 
   auth-service:
+    container_name: auth_service
     build:
       context: "./../auth-service"
       dockerfile: ../auth-service/cmd/auth-service.dockerfile
@@ -26,9 +30,12 @@ services:
       replicas: 1
     environment:
       DSN: "host=yourhost port=5432 user=youruser password=yourpasswd dbname=yourdbname sslmode=disable timezone=UTC connect_timeout=5"
+    networks:
+      - microservice
 
   postgres:
    image: 'postgres:15.3-alpine'
+   container_name: db_postgres
    ports:
      - '5432:5432'
    restart: always
@@ -36,13 +43,33 @@ services:
      mode: replicated
      replicas: 1
    environment:
-     DB_USER: your user
-     DB_PASSWD: your passwd
-     DB_NAME: your db name
+     - DB_USER=${YOUR_USER}
+     - DB_PASSWD=${YOUR_PASSWD}
+     - DB_NAME=${YOUR_DB_NAME}
+     - DB_HOST=${YOUR_DB_HOST}
+     # persist data in db-data (add new dir), data dir path in image
    volumes:
-   # persist data in db-data (add new dir)
-   # data dir path in image
      - ./db-data/postgres/:/var/lib/postgres/data/
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      ADMIN_DEFAULT_EMAIL: ${ADMIN_DEFAULT_EMAIL}
+      ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD}
+    depends_on:
+      - postgres
+    ports:
+      - "5050:80"
+    restart: unless-stopped
+    networks:
+      - microservice
+
 volumes:
   db-data:
     external: true
+
+# facilitates communication between containers
+networks:
+  microservice:
+    driver: bridge
