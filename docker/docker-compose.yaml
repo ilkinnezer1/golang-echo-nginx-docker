@@ -13,3 +13,36 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+
+  auth-service:
+    build:
+      context: "./../auth-service"
+      dockerfile: ../auth-service/cmd/auth-service.dockerfile
+    restart: always
+    ports:
+      - "6000:6000"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      DSN: "host=yourhost port=5432 user=youruser password=yourpasswd dbname=yourdbname sslmode=disable timezone=UTC connect_timeout=5"
+
+  postgres:
+   image: 'postgres:15.3-alpine'
+   ports:
+     - '5432:5432'
+   restart: always
+   deploy:
+     mode: replicated
+     replicas: 1
+   environment:
+     DB_USER: your user
+     DB_PASSWD: your passwd
+     DB_NAME: your db name
+   volumes:
+   # persist data in db-data (add new dir)
+   # data dir path in image
+     - ./db-data/postgres/:/var/lib/postgres/data/
+volumes:
+  db-data:
+    external: true
